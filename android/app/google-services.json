@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1016408346389",
+    "project_id": "login-mysql-domain",
+    "storage_bucket": "login-mysql-domain.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016408346389:android:ea5177b77507d38dcd231c",
+        "android_client_info": {
+          "package_name": "com.example.login_mysql_domain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJjJNf3HHuBvE_njr6-P672ehq0oEWnRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

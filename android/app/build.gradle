@@ -1,0 +1,45 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+android {
+    namespace = "com.example.login_mysql_domain"
+    compileSdkVersion 34
+    ndkVersion = "21.4.7075529" // Gunakan versi NDK yang sesuai
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        applicationId = "com.example.login_mysql_domain"
+        minSdk = 21 // Sesuaikan dengan minSdk yang Anda butuhkan
+        targetSdk = 34 // Sesuaikan dengan targetSdk yang Anda butuhkan
+        versionCode = 1 // Sesuaikan dengan versi kode yang Anda butuhkan
+        versionName = "1.0" // Sesuaikan dengan versi nama yang Anda butuhkan
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = true
+            shrinkResources = true // Tambahkan baris ini
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
+            signingConfig = signingConfigs.debug
+        }
+        debug {
+            // Jika Anda memerlukan konfigurasi khusus untuk build debug, tambahkan di sini
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
