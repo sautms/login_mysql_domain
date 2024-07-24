@@ -6,10 +6,13 @@ import 'guest_page.dart';  // Import halaman guest
 import 'check_user_location/check_user_location_page.dart';  // Import halaman Check User Location
 import 'peduli_pantau_lingkungan/peduli_pantau_lingkungan_page.dart'; // Import halaman Peduli Pantau Lingkungan
 import 'tarombo/tarombo_somba_debata_siahaan_page.dart'; // Import halaman Tarombo Somba Debata Siahaan
+import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Pastikan widget binding telah diinisialisasi
-  await Firebase.initializeApp(); // Inisialisasi Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
