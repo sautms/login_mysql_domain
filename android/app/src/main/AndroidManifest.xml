@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.login_mysql_domain"> <!-- Tambahkan nama paket di sini -->     
+    package="com.example.login_mysql_domain">
 
     <!-- Izin internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    
+
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
@@ -14,6 +15,9 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
+    <!-- Izin untuk menggunakan kamera -->
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
         android:label="login_mysql_domain"
