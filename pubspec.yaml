@@ -44,6 +44,8 @@ dependencies:
   logging: ^1.0.0 # Add this line to include the logging package
   #bcrypt: ^1.1.3
   crypto: ^3.0.0  # Sesuaikan versi yang sesuai dengan kebutuhan Anda
+  google_ml_kit: ^0.18.0  # Pastikan menggunakan versi terbaru
+  camera: ^0.11.0+1  # Versi terbaru dari pustaka camera
 
 dev_dependencies:
   flutter_test:
