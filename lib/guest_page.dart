@@ -3,6 +3,7 @@ import 'check_user_location/check_user_location_page.dart'; // Halaman ini berad
 import 'peduli_pantau_lingkungan/peduli_pantau_lingkungan_page.dart'; // Halaman ini berada di subdirektori 'peduli_pantau_lingkungan'
 import 'tarombo/tarombo_somba_debata_siahaan_page.dart'; // Halaman ini berada di subdirektori 'tarombo'
 import 'sign_in/google_sign_in_page.dart'; // Halaman ini berada di subdirektori 'sign_in'
+import 'face_recognition/face_recognition_page.dart'; // Halaman ini berada di subdirektori 'face_recognition'
 
 class GuestPage extends StatelessWidget {
   const GuestPage({super.key});
@@ -64,6 +65,18 @@ class GuestPage extends StatelessWidget {
                 );
               },
               child: const Text('Sign in with Google'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FaceRecognitionPage(),
+                  ),
+                );
+              },
+              child: const Text('Face Recognition'),
             ),
           ],
         ),
