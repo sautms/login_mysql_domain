@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'check_user_location/check_user_location_page.dart'; // Halaman ini berada di direktori utama 'lib'
-import 'peduli_pantau_lingkungan/peduli_pantau_lingkungan_page.dart'; // Halaman ini berada di subdirektori 'peduli_pantau_lingkungan'
-import 'tarombo/tarombo_somba_debata_siahaan_page.dart'; // Halaman ini berada di subdirektori 'tarombo'
-import 'sign_in/google_sign_in_page.dart'; // Halaman ini berada di subdirektori 'sign_in'
-import 'face_recognition/face_recognition_page.dart'; // Halaman ini berada di subdirektori 'face_recognition'
+import 'package:camera/camera.dart';
+import 'check_user_location/check_user_location_page.dart';
+import 'peduli_pantau_lingkungan/peduli_pantau_lingkungan_page.dart';
+import 'tarombo/tarombo_somba_debata_siahaan_page.dart';
+import 'sign_in/google_sign_in_page.dart';
+import 'face_recognition/face_recognition_page.dart';
 
 class GuestPage extends StatelessWidget {
   const GuestPage({super.key});
@@ -68,11 +69,18 @@ class GuestPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                // Menggunakan availableCameras() untuk mendapatkan daftar kamera
+                final cameras = await availableCameras();
+
+                // Cek apakah widget masih dipasang
+                if (!context.mounted) return;
+
+                // Navigasi ke FaceRecognitionPage dengan kamera pertama yang tersedia
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const FaceRecognitionPage(),
+                    builder: (context) => FaceRecognitionPage(camera: cameras.first),
                   ),
                 );
               },
