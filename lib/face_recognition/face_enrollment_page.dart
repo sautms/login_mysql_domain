@@ -1,64 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:http_parser/http_parser.dart';
+import 'package:logging/logging.dart';
+
+// Inisialisasi Logger
+final Logger _logger = Logger('FaceEnrollmentPage');
 
 class FaceEnrollmentPage extends StatefulWidget {
+  const FaceEnrollmentPage({super.key});
+
   @override
-  _FaceEnrollmentPageState createState() => _FaceEnrollmentPageState();
+  FaceEnrollmentPageState createState() => FaceEnrollmentPageState();
 }
 
-class _FaceEnrollmentPageState extends State<FaceEnrollmentPage> {
+class FaceEnrollmentPageState extends State<FaceEnrollmentPage> {
   File? _image;
   final picker = ImagePicker();
 
   Future<void> _getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.camera);
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        } else {
+          _logger.info('No image selected.');
+        }
+      });
+    } catch (e) {
+      _logger.severe('Failed to pick image: $e');
+    }
   }
 
   Future<void> _uploadImage() async {
     if (_image == null) return;
 
+    // ignore: unused_local_variable
     String fileName = path.basename(_image!.path);
-    Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('uploads/$fileName');
-    UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
-    await uploadTask.whenComplete(() {
-      print('File Uploaded');
-      firebaseStorageRef.getDownloadURL().then((fileURL) {
-        print('File URL: $fileURL');
-      });
-    });
+    var request = http.MultipartRequest('POST', Uri.parse('http://your-domain.com/upload'));
+    request.files.add(await http.MultipartFile.fromPath(
+      'file',
+      _image!.path,
+      contentType: MediaType('image', 'jpeg'),
+    ));
+    try {
+      var res = await request.send();
+
+      if (res.statusCode == 200) {
+        _logger.info('File Uploaded');
+      } else {
+        _logger.warning('Failed to upload file, status code: ${res.statusCode}');
+      }
+    } catch (e) {
+      _logger.severe('Error during file upload: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Face Enrollment'),
+        title: const Text('Face Enrollment'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _image == null
-                ? Text('No image selected.')
+                ? const Text('No image selected.')
                 : Image.file(_image!),
             ElevatedButton(
               onPressed: _getImage,
-              child: Icon(Icons.camera_alt),
+              child: const Icon(Icons.camera_alt),
             ),
             ElevatedButton(
               onPressed: _uploadImage,
-              child: Text('Upload Image'),
+              child: const Text('Upload Image'),
             ),
           ],
         ),
