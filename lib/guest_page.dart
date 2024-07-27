@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'check_user_location/check_user_location_page.dart';
 import 'peduli_pantau_lingkungan/peduli_pantau_lingkungan_page.dart';
 import 'tarombo/tarombo_somba_debata_siahaan_page.dart';
-import 'sign_in/google_sign_in_page.dart';
 import 'face_recognition/face_recognition_page.dart';
 
 class GuestPage extends StatelessWidget {
@@ -58,29 +56,21 @@ class GuestPage extends StatelessWidget {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
+                const description = '''
+                This page will perform the following steps:
+                1. Initialize the camera.
+                2. Start capturing images from the camera stream.
+                3. Process each image to detect faces.
+                4. Display detected faces and their bounding boxes.
+                5. Handle errors and provide feedback.
+
+                You will see updates as each step progresses.
+                ''';
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const GoogleSignInPage(),
-                  ),
-                );
-              },
-              child: const Text('Sign in with Google'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () async {
-                // Menggunakan availableCameras() untuk mendapatkan daftar kamera
-                final cameras = await availableCameras();
-
-                // Cek apakah widget masih dipasang
-                if (!context.mounted) return;
-
-                // Navigasi ke FaceRecognitionPage dengan kamera pertama yang tersedia
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FaceRecognitionPage(camera: cameras.first),
+                    builder: (context) => const FaceRecognitionPage(description: description), // Corrected usage
                   ),
                 );
               },

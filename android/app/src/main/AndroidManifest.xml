@@ -19,6 +19,8 @@
     <!-- Izin untuk menggunakan kamera -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
 
     <application
         android:label="login_mysql_domain"

@@ -1,13 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:logging/logging.dart'; // Import logging dari paket logging
-import 'dart:typed_data'; // Import untuk Uint8List
+import 'package:logging/logging.dart';
 
 class FaceRecognitionPage extends StatefulWidget {
-  final CameraDescription camera;
+  final String description;
 
-  const FaceRecognitionPage({super.key, required this.camera});
+  const FaceRecognitionPage({super.key, required this.description});
 
   @override
   FaceRecognitionPageState createState() => FaceRecognitionPageState();
@@ -16,86 +16,89 @@ class FaceRecognitionPage extends StatefulWidget {
 class FaceRecognitionPageState extends State<FaceRecognitionPage> {
   late CameraController _controller;
   late FaceDetector _faceDetector;
-
-  final Logger _logger = Logger('FaceRecognitionPageState');
+  late Logger _logger;
 
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(
-      widget.camera,
-      ResolutionPreset.high,
-    );
+    _logger = Logger('FaceRecognitionPage');
+    _initCamera();
+    _initFaceDetector();
+  }
 
-    _faceDetector = FaceDetector(
-      options: FaceDetectorOptions(
-        performanceMode: FaceDetectorMode.accurate,
-        enableContours: true,
-      ),
-    );
+  Future<void> _initCamera() async {
+    final cameras = await availableCameras();
+    _controller = CameraController(cameras[0], ResolutionPreset.high);
 
     _controller.initialize().then((_) {
-      _controller.startImageStream((image) {
+      if (!mounted) return;
+      setState(() {});
+      _controller.startImageStream((CameraImage image) {
         _processImage(image);
       });
     }).catchError((e) {
-      _logger.severe('Error initializing camera: $e');
+      _logger.severe('Error initializing camera', e);
     });
   }
 
+  void _initFaceDetector() {
+    _faceDetector = FaceDetector(options: FaceDetectorOptions(
+      enableContours: true,
+      enableClassification: true,
+    ));
+  }
+
   Future<void> _processImage(CameraImage image) async {
-    final bytes = _convertCameraImageToBytes(image);
-    final Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
-
-    final InputImageRotation imageRotation =
-        InputImageRotationValue.fromRawValue(widget.camera.sensorOrientation) ?? InputImageRotation.rotation0deg;
-
-    final InputImageFormat inputImageFormat =
-        InputImageFormatValue.fromRawValue(image.format.raw) ?? InputImageFormat.nv21;
+    final bytes = _concatenatePlanes(image.planes);
 
     final inputImage = InputImage.fromBytes(
       bytes: bytes,
-      metadata: InputImageMetadata(
-        size: imageSize,
-        rotation: imageRotation,
-        format: inputImageFormat,
-        bytesPerRow: image.planes[0].bytesPerRow, // Tambahkan bytesPerRow di sini
+      inputImageData: InputImageData(
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        imageRotation: _getRotationFromSensorOrientation(_controller.description.sensorOrientation),
+        inputImageFormat: InputImageFormat.yuv420, // Gantilah dengan format yang sesuai
+        planeData: image.planes.map((Plane plane) {
+          return InputImagePlaneMetadata(
+            bytesPerRow: plane.bytesPerRow,
+            height: plane.height,
+            width: plane.width,
+          );
+        }).toList(),
       ),
     );
 
     try {
-      final List<Face> faces = await _faceDetector.processImage(inputImage);
-
+      final faces = await _faceDetector.processImage(inputImage);
       for (Face face in faces) {
-        _logger.info('BoundingBox: ${face.boundingBox}');
+        // Handle detected faces
+        _logger.info('Detected face with bounding box: ${face.boundingBox}');
       }
     } catch (e) {
-      _logger.severe('Error: $e');
+      _logger.severe('Error processing image', e);
     }
   }
 
-  Uint8List _convertCameraImageToBytes(CameraImage image) {
-    final Plane plane = image.planes[0];
-    return plane.bytes;
+  Uint8List _concatenatePlanes(List<Plane> planes) {
+    final buffer = BytesBuilder();
+    for (final plane in planes) {
+      buffer.add(Uint8List.fromList(plane.bytes));
+    }
+    return buffer.toBytes();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Face Recognition'),
-      ),
-      body: FutureBuilder<void>(
-        future: _controller.initialize(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_controller);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
+  InputImageRotation _getRotationFromSensorOrientation(int sensorOrientation) {
+    switch (sensorOrientation) {
+      case 0:
+        return InputImageRotation.rotation0deg;
+      case 90:
+        return InputImageRotation.rotation90deg;
+      case 180:
+        return InputImageRotation.rotation180deg;
+      case 270:
+        return InputImageRotation.rotation270deg;
+      default:
+        return InputImageRotation.rotation0deg;
+    }
   }
 
   @override
@@ -103,5 +106,19 @@ class FaceRecognitionPageState extends State<FaceRecognitionPage> {
     _controller.dispose();
     _faceDetector.close();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_controller.value.isInitialized) {
+      return Container();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.description), // Use description here
+      ),
+      body: CameraPreview(_controller),
+    );
   }
 }
