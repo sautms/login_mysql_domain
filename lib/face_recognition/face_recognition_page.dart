@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+// Import ini diperlukan jika menggunakan Offset
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -42,10 +43,11 @@ class FaceRecognitionPageState extends State<FaceRecognitionPage> {
   }
 
   void _initFaceDetector() {
-    _faceDetector = FaceDetector(options: FaceDetectorOptions(
+    final options = FaceDetectorOptions(
       enableContours: true,
       enableClassification: true,
-    ));
+    );
+    _faceDetector = FaceDetector(options: options);
   }
 
   Future<void> _processImage(CameraImage image) async {
@@ -53,25 +55,43 @@ class FaceRecognitionPageState extends State<FaceRecognitionPage> {
 
     final inputImage = InputImage.fromBytes(
       bytes: bytes,
-      inputImageData: InputImageData(
+      metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
-        imageRotation: _getRotationFromSensorOrientation(_controller.description.sensorOrientation),
-        inputImageFormat: InputImageFormat.yuv420, // Gantilah dengan format yang sesuai
-        planeData: image.planes.map((Plane plane) {
-          return InputImagePlaneMetadata(
-            bytesPerRow: plane.bytesPerRow,
-            height: plane.height,
-            width: plane.width,
-          );
-        }).toList(),
+        rotation: _getRotationFromSensorOrientation(_controller.description.sensorOrientation),
+        format: InputImageFormat.yuv420,
+        bytesPerRow: image.planes[0].bytesPerRow, // Menambahkan parameter bytesPerRow
       ),
     );
 
     try {
       final faces = await _faceDetector.processImage(inputImage);
       for (Face face in faces) {
-        // Handle detected faces
-        _logger.info('Detected face with bounding box: ${face.boundingBox}');
+        final Rect boundingBox = face.boundingBox;
+
+        // ignore: unused_local_variable
+        final double? rotX = face.headEulerAngleX;
+        // ignore: unused_local_variable
+        final double? rotY = face.headEulerAngleY;
+        // ignore: unused_local_variable
+        final double? rotZ = face.headEulerAngleZ;
+
+        final FaceLandmark? leftEar = face.landmarks[FaceLandmarkType.leftEar];
+        if (leftEar != null) {
+          final Offset leftEarPos = Offset(leftEar.position.x.toDouble(), leftEar.position.y.toDouble());
+          _logger.info('Left ear position: $leftEarPos');
+        }
+
+        if (face.smilingProbability != null) {
+          final double? smileProb = face.smilingProbability;
+          _logger.info('Smile probability: $smileProb');
+        }
+
+        if (face.trackingId != null) {
+          final int? id = face.trackingId;
+          _logger.info('Face tracking ID: $id');
+        }
+
+        _logger.info('Detected face with bounding box: $boundingBox');
       }
     } catch (e) {
       _logger.severe('Error processing image', e);
@@ -116,7 +136,7 @@ class FaceRecognitionPageState extends State<FaceRecognitionPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.description), // Use description here
+        title: Text(widget.description),
       ),
       body: CameraPreview(_controller),
     );
